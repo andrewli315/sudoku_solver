@@ -61,7 +61,7 @@ def gen_clause():
     return clause
 
 
-def solve(clause,assumption):
+def solve(clause):
     solver = Solver(bootstrap_with=clause)
     solver.solve()
     print_solution(solver.get_model())
@@ -78,21 +78,6 @@ def print_solution(model):
                 print(k)
                 index = 0
 
-def validate_solution(model, assumption):
-    total_count = 0
-    count = 0
-    row = 0
-    for i, j in model:
-        total_count += 1
-    for (row, col) in assumption:
-        clue = assumption[row,col]
-        if model[(row, col)] !=  clue:
-            return False
-    if total_count == 81:
-        return True
-    else:
-        return False
-
 
 def print_to_file(fname, clause):
     print("p cnf {} {}".format(9*9*9, len(clause)))
@@ -102,7 +87,6 @@ def print_to_file(fname, clause):
 
 
 def read_file(fname, clause):
-    assumption= {}
     with open(fname, 'r') as f:
         a = f.read().replace('\n',' ') 
         a = a.split(' ')
@@ -115,10 +99,8 @@ def read_file(fname, clause):
                 i = index // 9
                 j = index % 9 
                 clause.append([encode(i, j , k , True)])                
-                assumption[i, j] = k 
                 index += 1
 
-    return assumption
 def main():
     argp = argparse.ArgumentParser(
         description='Solve Sudoku problems with a SAT solver.',
@@ -129,11 +111,9 @@ def main():
                       help='enumerate all solutions')
     args = argp.parse_args()
     fname = args.file
-    #print(fname)
     clause = gen_clause()
-    assumption = read_file(fname, clause)
-    solve(clause, assumption)
-    #print_to_file("sudoku.dimacs", clause)
+    read_file(fname, clause)
+    solve(clause)
 
 if __name__ == "__main__":
     main()
